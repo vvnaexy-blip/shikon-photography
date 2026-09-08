@@ -1,4 +1,4 @@
-﻿import type { Metadata } from 'next'
+import type { Metadata } from 'next'
 import { Cormorant_Garamond, Inter } from 'next/font/google'
 import './globals.css'
 
@@ -94,17 +94,56 @@ export const metadata: Metadata = {
   },
 }
 
+const structuredData = {
+  '@context': 'https://schema.org',
+  '@type': 'ProfessionalService',
+  name: 'Ahmed Shiko Photography',
+  alternateName: 'Ahmed Shiko',
+  url: 'https://shikon-photography.vercel.app',
+  image: 'https://shikon-photography.vercel.app/logo.png',
+  telephone: '+201050052508',
+  description:
+    'Professional photographer in Sharm El Sheikh, Egypt specializing in wedding, couple, portrait, family, fashion and beach photography.',
+  address: {
+    '@type': 'PostalAddress',
+    addressLocality: 'Sharm El Sheikh',
+    addressCountry: 'EG',
+  },
+  areaServed: {
+    '@type': 'City',
+    name: 'Sharm El Sheikh',
+  },
+  priceRange: '$$',
+  sameAs: [
+    'https://www.instagram.com/shik0_photography_/',
+  ],
+  serviceType: [
+    'Wedding Photography',
+    'Couple Photography',
+    'Portrait Photography',
+    'Family Photography',
+    'Beach Photography',
+    'Fashion Photography',
+  ],
+}
+
 export default function RootLayout({ children }: LayoutProps<'/'>) {
   return (
     <html
       lang="en"
       className={`${cormorant.variable} ${inter.variable} h-full`}
     >
+      <head>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(structuredData),
+          }}
+        />
+      </head>
       <body className="min-h-full flex flex-col bg-warm-50 text-foreground antialiased">
         {children}
       </body>
     </html>
   )
 }
-
-
