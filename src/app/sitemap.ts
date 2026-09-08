@@ -1,9 +1,10 @@
-import type { MetadataRoute } from 'next'
+﻿import type { MetadataRoute } from 'next'
+import { getGalleries } from '@/lib/db/galleries'
 
-export default function sitemap(): MetadataRoute.Sitemap {
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = 'https://shikon-photography.vercel.app'
 
-  return [
+  const staticPages: MetadataRoute.Sitemap = [
     {
       url: baseUrl,
       lastModified: new Date(),
@@ -17,4 +18,21 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.9,
     },
   ]
+
+  try {
+    const galleries = await getGalleries()
+
+    const galleryPages: MetadataRoute.Sitemap = galleries
+      .filter((gallery) => gallery.slug)
+      .map((gallery) => ({
+        url: `${baseUrl}/gallery/${gallery.slug}`,
+        lastModified: new Date(),
+        changeFrequency: 'weekly',
+        priority: 0.8,
+      }))
+
+    return [...staticPages, ...galleryPages]
+  } catch {
+    return staticPages
+  }
 }
