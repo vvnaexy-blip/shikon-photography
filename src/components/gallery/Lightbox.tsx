@@ -176,7 +176,7 @@ export default function Lightbox({
 
         {/* Photo */}
         <div
-          className="w-full h-full flex items-center justify-center px-14 sm:px-16"
+          className="w-full h-full flex items-center justify-center px-2 sm:px-12"
           onDoubleClick={handleToggleFav}
         >
           {!imgLoaded && (
@@ -194,7 +194,7 @@ export default function Lightbox({
               'max-w-full max-h-full object-contain transition-opacity duration-150',
               imgLoaded ? 'opacity-100' : 'opacity-0',
             )}
-            style={{ maxHeight: 'calc(100vh - 100px)' }}
+            style={{ maxHeight: 'calc(100vh - 72px)' }}
           />
         </div>
 
