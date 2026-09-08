@@ -106,11 +106,11 @@ function GalleriesContent() {
       </nav>
 
       {/* ── Albums grid ──────────────────────────────────────────────────── */}
-      <section className="max-w-6xl mx-auto px-4 sm:px-6 pt-10 pb-20">
+      <section className="max-w-6xl mx-auto px-4 sm:px-6 pt-6 sm:pt-10 pb-16 sm:pb-20">
 
         {/* Preview notice — only when showing demo data */}
         {isShowingDemo && !loading && (
-          <p className="text-center text-[9px] tracking-[0.2em] uppercase text-warm-400 mb-10">
+          <p className="text-center text-[9px] tracking-[0.2em] uppercase text-warm-400 mb-8 sm:mb-10">
             Preview — upload your own galleries from the admin to replace this demo
           </p>
         )}
@@ -133,7 +133,7 @@ function GalleriesContent() {
 
         {/* Albums — all rendered at once, no pagination, no Load More */}
         {!loading && filtered.length > 0 && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-14 sm:gap-y-16">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-6 sm:gap-x-8 gap-y-10 sm:gap-y-14 lg:gap-y-16">
             {filtered.map((gallery) => (
               <GalleryCard key={gallery.id} gallery={gallery} />
             ))}

@@ -16,6 +16,8 @@ export default function Navbar() {
   const [open, setOpen] = useState(false)
 
   if (pathname.startsWith('/admin')) return null
+  // Homepage has its own identity header — no separate navbar needed
+  if (pathname === '/') return null
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-warm-50/90 backdrop-blur-sm border-b border-border-light">

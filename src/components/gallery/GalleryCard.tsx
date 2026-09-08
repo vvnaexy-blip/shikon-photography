@@ -11,14 +11,7 @@ interface GalleryCardProps {
 export default function GalleryCard({ gallery }: GalleryCardProps) {
   const cover    = getCoverPhoto(gallery)
   const isDemo   = isDemoGallery(gallery.id)
-
-  // Both real and demo galleries use /gallery/[slug].
-  // Demo slugs start with "demo-" — the gallery page handles them (or shows not-found gracefully).
-  const href = `/gallery/${gallery.slug}`
-
-  // For real Supabase photos: imageUrl is a Supabase Storage public URL.
-  // For demo photos: imageUrl is a /demo/<folder>/cover.jpg path.
-  // addTransform in utils.ts is a no-op for non-Supabase URLs, so this is safe.
+  const href     = `/gallery/${gallery.slug}`
   const coverSrc = cover?.imageUrl || cover?.url || null
 
   return (
@@ -27,57 +20,41 @@ export default function GalleryCard({ gallery }: GalleryCardProps) {
       className="group block"
       aria-label={`View gallery: ${gallery.title}`}
     >
-      {/* ── Cover image ────────────────────────────────────────────────── */}
-      <div
-        className="relative overflow-hidden bg-warm-200 mb-4"
-        style={{ aspectRatio: '4 / 3' }}
-      >
+      {/* Cover — natural aspect ratio, no forced crop */}
+      <div className="w-full overflow-hidden bg-warm-100 relative">
         {coverSrc ? (
           <img
             src={coverSrc}
             alt={gallery.title}
             loading="lazy"
             decoding="async"
-            className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 ease-out will-change-transform group-hover:scale-[1.03]"
+            className="w-full h-auto block transition-transform duration-500 group-hover:scale-[1.02]"
           />
         ) : (
-          <div className="absolute inset-0 flex items-center justify-center">
-            <Camera size={28} strokeWidth={1} className="text-warm-400" />
+          <div className="w-full aspect-[4/3] flex items-center justify-center bg-warm-200">
+            <Camera size={24} strokeWidth={1} className="text-warm-400" />
           </div>
         )}
 
-        {/* Barely-there bottom gradient — prevents metadata from bleeding into photo */}
-        {coverSrc && (
-          <div className="absolute inset-x-0 bottom-0 h-12 bg-gradient-to-t from-black/8 to-transparent pointer-events-none" />
-        )}
-
-        {/* Demo badge — minimal, top-left */}
         {isDemo && (
-          <div className="absolute top-2.5 left-2.5 bg-warm-50/80 backdrop-blur-sm px-2 py-[3px]">
-            <span className="text-[7px] tracking-[0.18em] uppercase text-muted">Preview</span>
+          <div className="absolute top-2 left-2 bg-warm-50/80 backdrop-blur-sm px-2 py-[3px]">
+            <span className="text-[7px] tracking-[0.15em] uppercase text-muted">Preview</span>
           </div>
         )}
       </div>
 
-      {/* ── Metadata ─────────────────────────────────────────────────────── */}
-      <div className="space-y-[3px]">
-        {/* Category — smallest, uppercase, most muted */}
-        <p className="text-[9px] tracking-[0.25em] uppercase text-muted/70">
+      {/* Meta — centered */}
+      <div className="text-center mt-3 space-y-[3px]">
+        <p className="text-[9px] tracking-[0.22em] uppercase text-muted/60">
           {CATEGORY_LABELS[gallery.category]}
         </p>
-
-        {/* Title — primary, editorial */}
-        <h3 className="font-[family-name:var(--font-cormorant)] text-[21px] sm:text-[23px] font-light leading-snug text-foreground group-hover:text-warm-700 transition-colors duration-200">
+        <h3 className="font-[family-name:var(--font-cormorant)] text-[18px] sm:text-[20px] font-light leading-snug text-foreground group-hover:text-warm-600 transition-colors">
           {gallery.title}
         </h3>
-
-        {/* Client name — italic, secondary */}
-        <p className="font-[family-name:var(--font-cormorant)] text-[14px] font-light italic text-muted leading-snug">
+        <p className="font-[family-name:var(--font-cormorant)] text-[13px] font-light italic text-muted">
           {gallery.clientName}
         </p>
-
-        {/* Location · Date — smallest, most subtle */}
-        <p className="text-[10px] tracking-wide text-warm-400 pt-[2px]">
+        <p className="text-[11px] text-warm-400 tracking-wide pt-[2px]">
           {gallery.location}&ensp;·&ensp;{formatDateShort(gallery.date)}
         </p>
       </div>

@@ -1,187 +1,254 @@
+'use client'
+
+import { useEffect, useState, useMemo } from 'react'
+import Image from 'next/image'
 import Link from 'next/link'
-import { ArrowRight, MessageCircle } from 'lucide-react'
-import Navbar from '@/components/layout/Navbar'
+import { ChevronDown } from 'lucide-react'
 import Footer from '@/components/layout/Footer'
-import HomeGalleries from '@/components/home/HomeGalleries'
-import { CATEGORIES, CATEGORY_LABELS } from '@/lib/utils'
+import { getGalleries } from '@/lib/db/galleries'
+import { DEMO_GALLERIES } from '@/lib/demo'
+import { CATEGORY_LABELS } from '@/lib/utils'
+import { formatDateShort } from '@/lib/utils'
+import type { Gallery, GalleryCategory } from '@/types'
+
+// WhatsApp link with pre-filled booking message
+const WA_HREF = 'https://wa.me/201050052508?text=Hello%21%20I%20would%20like%20to%20book%20a%20photography%20session%20in%20Sharm%20El%20Sheikh%20%F0%9F%93%B8'
+
+// ─── Minimal GalleryItem (used only on homepage) ─────────────────────────────
+
+function GalleryItem({ gallery }: { gallery: Gallery }) {
+  const cover = gallery.photos.find((p) => p.id === (gallery.coverImage || gallery.coverPhotoId))
+    ?? gallery.photos[0]
+  const coverSrc = cover?.imageUrl || cover?.url || null
+
+  return (
+    <Link
+      href={`/gallery/${gallery.slug}`}
+      className="block group"
+      aria-label={`Open gallery: ${gallery.title}`}
+    >
+      {/* Cover — natural aspect ratio, no forced crop */}
+      <div className="w-full overflow-hidden bg-warm-100">
+        {coverSrc ? (
+          <img
+            src={coverSrc}
+            alt={gallery.title}
+            loading="lazy"
+            decoding="async"
+            className="w-full h-auto block transition-transform duration-500 group-hover:scale-[1.02]"
+          />
+        ) : (
+          // No cover yet — height placeholder
+          <div className="w-full aspect-[4/3] bg-warm-200 flex items-center justify-center">
+            <span className="text-[10px] tracking-[0.15em] uppercase text-warm-400">No cover</span>
+          </div>
+        )}
+      </div>
+
+      {/* Meta — centered */}
+      <div className="text-center mt-3 mb-1">
+        <p className="font-[family-name:var(--font-cormorant)] text-[18px] sm:text-[20px] font-light leading-snug text-foreground group-hover:text-warm-600 transition-colors">
+          {gallery.title}
+        </p>
+        <p className="text-[11px] text-warm-400 mt-1 tracking-wide">
+          {formatDateShort(gallery.date)}
+        </p>
+      </div>
+    </Link>
+  )
+}
+
+// ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function HomePage() {
+  const [realGalleries,  setRealGalleries]  = useState<Gallery[]>([])
+  const [loading,        setLoading]        = useState(true)
+  const [activeCategory, setActive]         = useState<GalleryCategory | 'all'>('all')
+  const [dropOpen,       setDropOpen]       = useState(false)
+
+  useEffect(() => {
+    getGalleries()
+      .then((d) => setRealGalleries(d))
+      .catch(() => setRealGalleries([]))
+      .finally(() => setLoading(false))
+  }, [])
+
+  const galleries = realGalleries.length > 0 ? realGalleries : DEMO_GALLERIES
+
+  // Only show categories that have at least one gallery
+  const populatedCategories = useMemo((): GalleryCategory[] => {
+    const seen = new Set<GalleryCategory>()
+    galleries.forEach((g) => seen.add(g.category))
+    const ORDER: GalleryCategory[] = [
+      'wedding', 'portrait', 'family', 'newborn', 'event', 'commercial', 'landscape', 'other',
+    ]
+    return ORDER.filter((c) => seen.has(c))
+  }, [galleries])
+
+  const filtered = useMemo(
+    () => activeCategory === 'all' ? galleries : galleries.filter((g) => g.category === activeCategory),
+    [galleries, activeCategory],
+  )
+
+  const activeCategoryLabel = activeCategory === 'all' ? 'All Galleries' : CATEGORY_LABELS[activeCategory]
+
   return (
     <>
-      <Navbar />
-      <main className="flex-1">
-        {/* ── Hero ─────────────────────────────────────────────── */}
-        <section className="min-h-screen flex flex-col items-center justify-center px-6 pt-16 text-center">
-          <p className="text-[10px] tracking-[0.3em] uppercase text-muted mb-8">
-            Sharm El Sheikh, Egypt
-          </p>
-          <h1 className="font-[family-name:var(--font-cormorant)] text-6xl sm:text-8xl md:text-9xl font-light leading-none tracking-tight mb-6">
-            SHIKO
-          </h1>
-          <p className="font-[family-name:var(--font-cormorant)] text-xl sm:text-2xl font-light italic text-muted mb-12 tracking-wide">
-            Photography
-          </p>
-          <p className="text-sm text-muted max-w-sm leading-relaxed mb-12 tracking-wide">
-            Capturing timeless moments with an editorial eye. Weddings,
-            portraits, events, and more.
-          </p>
-          <div className="flex flex-col sm:flex-row items-center gap-4">
-            <Link
-              href="/galleries"
-              className="inline-flex items-center gap-2 text-[11px] tracking-[0.15em] uppercase border border-foreground px-8 py-4 hover:bg-foreground hover:text-warm-50 transition-all duration-200"
-            >
-              View Galleries
-              <ArrowRight size={14} />
-            </Link>
+      {/* ── No sticky Navbar — minimal identity header only ── */}
+      <main className="min-h-screen bg-warm-50">
+
+        {/* ════════════════════════════════════════════════
+            Photographer Identity — top of every page
+        ════════════════════════════════════════════════ */}
+        <header className="pt-10 pb-6 px-8 sm:px-12 flex flex-col items-center text-center border-b border-border-light">
+          {/* Logo */}
+          <Link href="/" aria-label="SHIKO Photography">
+            <Image
+              src="/logo.png"
+              alt="SHIKO Photography"
+              width={140}
+              height={56}
+              className="h-12 w-auto object-contain mb-4"
+              priority
+            />
+          </Link>
+
+          {/* Contact row */}
+          <div className="flex flex-col items-center gap-2 mt-1">
+            {/* Phone / WhatsApp — tappable */}
             <a
-              href="#contact"
-              className="text-[11px] tracking-[0.15em] uppercase text-muted hover:text-foreground transition-colors px-8 py-4"
+              href={WA_HREF}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-[13px] text-muted hover:text-foreground transition-colors tracking-wide"
             >
-              Get in Touch
+              +201050052508
+            </a>
+
+            {/* Instagram */}
+            <a
+              href="https://instagram.com/shik0_photography_"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1.5 text-[13px] text-muted hover:text-foreground transition-colors tracking-wide"
+            >
+              {/* Instagram icon */}
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <rect width="20" height="20" x="2" y="2" rx="5" ry="5" />
+                <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
+                <line x1="17.5" x2="17.51" y1="6.5" y2="6.5" />
+              </svg>
+              @shik0_photography_
             </a>
           </div>
 
-          {/* Scroll hint */}
-          <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 opacity-50">
-            <div className="w-px h-10 bg-warm-400" />
-          </div>
-        </section>
+          {/* Thin separator */}
+          <div className="w-12 h-px bg-border mt-5" />
+        </header>
 
-        {/* ── Divider ───────────────────────────────────────────── */}
-        <div className="border-t border-border-light" />
+        {/* ════════════════════════════════════════════════
+            Category Dropdown
+        ════════════════════════════════════════════════ */}
+        <div className="px-8 sm:px-12 py-5 flex justify-center">
+          <div className="relative w-full max-w-xs sm:max-w-sm">
+            <button
+              onClick={() => setDropOpen((v) => !v)}
+              className="w-full flex items-center justify-between gap-3 border border-border bg-warm-50 px-5 py-3.5 text-[12px] tracking-[0.15em] uppercase text-foreground hover:bg-warm-100 transition-colors"
+              aria-haspopup="listbox"
+              aria-expanded={dropOpen}
+            >
+              <span>{activeCategoryLabel}</span>
+              <ChevronDown
+                size={14}
+                className={`transition-transform duration-200 ${dropOpen ? 'rotate-180' : ''}`}
+              />
+            </button>
 
-        {/* ── Categories ───────────────────────────────────────── */}
-        <section className="py-24 px-6">
-          <div className="max-w-6xl mx-auto">
-            <div className="text-center mb-16">
-              <p className="text-[10px] tracking-[0.3em] uppercase text-muted mb-4">
-                Specialties
-              </p>
-              <h2 className="font-[family-name:var(--font-cormorant)] text-4xl sm:text-5xl font-light">
-                What We Capture
-              </h2>
-            </div>
-
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-px bg-border-light">
-              {CATEGORIES.map((cat) => (
-                <Link
-                  key={cat}
-                  href={`/galleries?category=${cat}`}
-                  className="group bg-warm-50 flex flex-col items-center justify-center py-10 px-6 text-center hover:bg-warm-100 transition-colors"
+            {dropOpen && (
+              <div
+                className="absolute top-full left-0 right-0 z-30 bg-warm-50 border border-border border-t-0 shadow-sm"
+                role="listbox"
+              >
+                {/* All */}
+                <button
+                  role="option"
+                  aria-selected={activeCategory === 'all'}
+                  onClick={() => { setActive('all'); setDropOpen(false) }}
+                  className={[
+                    'w-full text-left px-5 py-3 text-[12px] tracking-[0.12em] uppercase transition-colors',
+                    activeCategory === 'all'
+                      ? 'text-foreground bg-warm-100'
+                      : 'text-muted hover:text-foreground hover:bg-warm-100',
+                  ].join(' ')}
                 >
-                  <span className="font-[family-name:var(--font-cormorant)] text-xl font-light group-hover:text-muted transition-colors">
+                  All Galleries
+                </button>
+
+                {populatedCategories.map((cat) => (
+                  <button
+                    key={cat}
+                    role="option"
+                    aria-selected={activeCategory === cat}
+                    onClick={() => { setActive(cat); setDropOpen(false) }}
+                    className={[
+                      'w-full text-left px-5 py-3 text-[12px] tracking-[0.12em] uppercase transition-colors border-t border-border-light',
+                      activeCategory === cat
+                        ? 'text-foreground bg-warm-100'
+                        : 'text-muted hover:text-foreground hover:bg-warm-100',
+                    ].join(' ')}
+                  >
                     {CATEGORY_LABELS[cat]}
-                  </span>
-                </Link>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Close dropdown on outside click */}
+        {dropOpen && (
+          <div
+            className="fixed inset-0 z-20"
+            onClick={() => setDropOpen(false)}
+            aria-hidden="true"
+          />
+        )}
+
+        {/* ════════════════════════════════════════════════
+            Gallery Archive
+            Mobile:  1 column, natural aspect ratio
+            Desktop: 2-3 columns
+        ════════════════════════════════════════════════ */}
+        <section className="px-8 sm:px-12 pb-16">
+
+          {/* Loading */}
+          {loading && (
+            <div className="flex items-center justify-center py-20">
+              <div className="w-5 h-5 border border-muted border-t-foreground rounded-full animate-spin" />
+            </div>
+          )}
+
+          {/* Empty */}
+          {!loading && filtered.length === 0 && (
+            <div className="text-center py-20">
+              <p className="font-[family-name:var(--font-cormorant)] text-xl font-light text-warm-500">
+                No galleries in this category yet.
+              </p>
+            </div>
+          )}
+
+          {/* Galleries */}
+          {!loading && filtered.length > 0 && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-6 sm:gap-x-8 gap-y-8 sm:gap-y-12">
+              {filtered.map((gallery) => (
+                <GalleryItem key={gallery.id} gallery={gallery} />
               ))}
             </div>
-          </div>
-        </section>
-
-        {/* ── Divider ───────────────────────────────────────────── */}
-        <div className="border-t border-border-light" />
-
-        {/* ── About / Philosophy ───────────────────────────────── */}
-        <section className="py-24 px-6">
-          <div className="max-w-3xl mx-auto text-center">
-            <p className="text-[10px] tracking-[0.3em] uppercase text-muted mb-6">
-              The Approach
-            </p>
-            <blockquote className="font-[family-name:var(--font-cormorant)] text-3xl sm:text-4xl font-light italic leading-relaxed text-warm-700 mb-8">
-              &ldquo;Every frame tells a story. Every moment, preserved
-              forever.&rdquo;
-            </blockquote>
-            <p className="text-sm text-muted leading-relaxed max-w-lg mx-auto">
-              Based in the vibrant city of Sharm El Sheikh, we bring a clean,
-              editorial perspective to every shoot — whether it&apos;s an
-              intimate wedding, a family session, or a corporate event.
-            </p>
-          </div>
-        </section>
-
-        {/* ── Divider ───────────────────────────────────────────── */}
-        <div className="border-t border-border-light" />
-
-        {/* ── Recent Galleries — fetched live from Supabase ────── */}
-        <HomeGalleries />
-
-        {/* ── Divider ───────────────────────────────────────────── */}
-        <div className="border-t border-border-light" />
-
-        {/* ── CTA ──────────────────────────────────────────────── */}
-        <section className="py-24 px-6 bg-warm-100">
-          <div className="max-w-4xl mx-auto text-center">
-            <p className="text-[10px] tracking-[0.3em] uppercase text-muted mb-6">
-              Your Galleries
-            </p>
-            <h2 className="font-[family-name:var(--font-cormorant)] text-4xl sm:text-5xl font-light mb-6">
-              View Client Galleries
-            </h2>
-            <p className="text-sm text-muted leading-relaxed mb-10 max-w-sm mx-auto">
-              If you&apos;ve had a session with us, your photos are waiting.
-              Browse and download your memories.
-            </p>
-            <Link
-              href="/galleries"
-              className="inline-flex items-center gap-2 text-[11px] tracking-[0.15em] uppercase bg-foreground text-warm-50 px-8 py-4 hover:bg-warm-800 transition-colors"
-            >
-              Go to Galleries
-              <ArrowRight size={14} />
-            </Link>
-          </div>
-        </section>
-
-        {/* ── Divider ───────────────────────────────────────────── */}
-        <div className="border-t border-border-light" />
-
-        {/* ── Contact ──────────────────────────────────────────── */}
-        <section id="contact" className="py-24 px-6">
-          <div className="max-w-6xl mx-auto">
-            <div className="text-center mb-16">
-              <p className="text-[10px] tracking-[0.3em] uppercase text-muted mb-4">
-                Let&apos;s Work Together
-              </p>
-              <h2 className="font-[family-name:var(--font-cormorant)] text-4xl sm:text-5xl font-light">
-                Get in Touch
-              </h2>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 max-w-2xl mx-auto gap-6">
-              <a
-                href="https://wa.me/201050052508"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="group border border-border p-8 flex flex-col items-center text-center gap-4 hover:border-foreground hover:bg-warm-100 transition-all duration-200"
-              >
-                <MessageCircle size={24} strokeWidth={1.5} className="text-muted group-hover:text-foreground transition-colors" />
-                <div>
-                  <p className="text-[10px] tracking-[0.15em] uppercase text-muted mb-1">WhatsApp</p>
-                  <p className="font-[family-name:var(--font-cormorant)] text-lg font-medium">01050052508</p>
-                </div>
-              </a>
-
-              <a
-                href="https://instagram.com/shik0_photography_"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="group border border-border p-8 flex flex-col items-center text-center gap-4 hover:border-foreground hover:bg-warm-100 transition-all duration-200"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
-                  fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"
-                  className="text-muted group-hover:text-foreground transition-colors" aria-hidden="true">
-                  <rect width="20" height="20" x="2" y="2" rx="5" ry="5" />
-                  <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
-                  <line x1="17.5" x2="17.51" y1="6.5" y2="6.5" />
-                </svg>
-                <div>
-                  <p className="text-[10px] tracking-[0.15em] uppercase text-muted mb-1">Instagram</p>
-                  <p className="font-[family-name:var(--font-cormorant)] text-lg font-medium">@shik0_photography_</p>
-                </div>
-              </a>
-            </div>
-          </div>
+          )}
         </section>
       </main>
+
       <Footer />
     </>
   )
