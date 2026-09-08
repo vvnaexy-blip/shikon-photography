@@ -42,7 +42,15 @@ export default function Lightbox({
     if (!photo) return
     setFavoured(isFavorite(photo.id))
     setImgLoaded(false)
-  }, [photo?.id])
+
+    // Preload nearby photos for faster navigation
+    const nearbyPhotos = [photos[currentIndex - 1], photos[currentIndex + 1]]
+    nearbyPhotos.forEach((nearbyPhoto) => {
+      if (!nearbyPhoto) return
+      const img = new Image()
+      img.src = lightboxUrl(nearbyPhoto)
+    })
+  }, [photo?.id, currentIndex, photos])
 
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
@@ -221,3 +229,6 @@ export default function Lightbox({
     </div>
   )
 }
+
+
+
