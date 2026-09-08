@@ -28,7 +28,7 @@ export default function GalleryCard({ gallery }: GalleryCardProps) {
             alt={gallery.title}
             loading="lazy"
             decoding="async"
-            className="w-full h-auto block transition-transform duration-500 group-hover:scale-[1.02]"
+            className="w-full aspect-[3/2] object-cover block transition-transform duration-500 group-hover:scale-[1.02]"
           />
         ) : (
           <div className="w-full aspect-[4/3] flex items-center justify-center bg-warm-200">
