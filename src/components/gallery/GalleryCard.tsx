@@ -21,14 +21,14 @@ export default function GalleryCard({ gallery }: GalleryCardProps) {
       aria-label={`View gallery: ${gallery.title}`}
     >
       {/* Cover — natural aspect ratio, no forced crop */}
-      <div className="w-full overflow-hidden bg-warm-100 relative">
+      <div className="w-full aspect-[3/2] overflow-hidden bg-warm-100 relative">
         {coverSrc ? (
           <img
             src={coverSrc}
             alt={gallery.title}
             loading="lazy"
             decoding="async"
-            className="w-full aspect-[3/2] object-cover block transition-transform duration-500 group-hover:scale-[1.02]"
+            className="absolute inset-0 w-full h-full object-cover block transition-transform duration-500 group-hover:scale-[1.02]"
           />
         ) : (
           <div className="w-full aspect-[4/3] flex items-center justify-center bg-warm-200">
