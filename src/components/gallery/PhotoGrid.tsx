@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { Download, Heart } from 'lucide-react'
-import { cn, gridThumbUrl, originalUrl } from '@/lib/utils'
+import { cn, originalUrl } from '@/lib/utils'
 import { isFavorite, toggleFavorite } from '@/lib/store'
 import Lightbox from './Lightbox'
 import type { Photo } from '@/types'
@@ -99,7 +99,7 @@ export default function PhotoGrid({
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-0.5 sm:gap-1">
         {visiblePhotos.map((photo, idx) => {
           const faved = localFavs.has(photo.id)
-          const src   = gridThumbUrl(photo)
+          const src   = photo.imageUrl || photo.url || ''
 
           return (
             <div
