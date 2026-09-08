@@ -16,6 +16,9 @@ const inter = Inter({
 })
 
 export const metadata: Metadata = {
+  verification: {
+    google: 'D6_L8-iyTGdpGjpjTdSx1P6DDQkiFcpNFyofhDLk5CQ',
+  },
   metadataBase: new URL('https://shikon-photography.vercel.app'),
 
   title: {
@@ -103,4 +106,5 @@ export default function RootLayout({ children }: LayoutProps<'/'>) {
     </html>
   )
 }
+
 
