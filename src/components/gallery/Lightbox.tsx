@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useEffect, useCallback, useState, useRef } from 'react'
 import { X, ChevronLeft, ChevronRight, Download, Heart } from 'lucide-react'
@@ -117,8 +117,8 @@ export default function Lightbox({
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
     >
-      {/* ── Top bar — compact ────────────────────────────────────── */}
-      <div className="flex items-center justify-between px-4 py-3 flex-shrink-0">
+      {/* â”€â”€ Top bar â€” compact â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      <div className="absolute top-0 left-0 right-0 z-20 flex items-center justify-between px-4 py-3">
         <span className="text-[11px] tracking-[0.2em] text-white/35 tabular-nums font-[family-name:var(--font-inter)]">
           {currentIndex + 1} / {photos.length}
         </span>
@@ -161,9 +161,9 @@ export default function Lightbox({
         </div>
       </div>
 
-      {/* ── Image — fills remaining space ─────────────────────── */}
-      <div className="flex-1 flex items-center justify-center relative overflow-hidden select-none min-h-0">
-        {/* Prev — larger touch target, shown only when available */}
+      {/* â”€â”€ Image â€” fills remaining space â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      <div className="absolute inset-0 flex items-center justify-center relative overflow-hidden select-none">
+        {/* Prev â€” larger touch target, shown only when available */}
         {hasPrev && (
           <button
             onClick={() => onNavigate(currentIndex - 1)}
@@ -176,7 +176,7 @@ export default function Lightbox({
 
         {/* Photo */}
         <div
-          className="w-full h-full flex items-center justify-center px-2 sm:px-12"
+          className="absolute inset-0 flex items-center justify-center px-1 sm:px-8"
           onDoubleClick={handleToggleFav}
         >
           {!imgLoaded && (
@@ -191,10 +191,10 @@ export default function Lightbox({
             draggable={false}
             onLoad={() => setImgLoaded(true)}
             className={cn(
-              'max-w-full max-h-full object-contain transition-opacity duration-150',
+              'w-full h-full object-contain transition-opacity duration-150',
               imgLoaded ? 'opacity-100' : 'opacity-0',
             )}
-            style={{ maxHeight: 'calc(100vh - 72px)' }}
+            style={{ maxHeight: '100vh' }}
           />
         </div>
 
@@ -210,7 +210,7 @@ export default function Lightbox({
         )}
       </div>
 
-      {/* ── Caption — only if present ──────────────────────────── */}
+      {/* â”€â”€ Caption â€” only if present â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
       {photo.caption && (
         <div className="flex-shrink-0 px-6 pb-4 pt-1 flex items-center justify-center">
           <p className="text-[11px] text-white/30 tracking-wider text-center">
